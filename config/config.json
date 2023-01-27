@@ -1,5 +1,12 @@
 {
     "APIKeys":[
-        {"twitch":  }
+        {"Twitch": 0  }
+    ],
+    "ServerInfo":[
+        {"IRCServerName": 0 },
+        {"Port": 0},
+        {"ChannelName": 0}, 
+        {"OAuthToken": 0}, 
+        {"MsgRate": 0}
     ]
 }
