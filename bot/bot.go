@@ -2,11 +2,15 @@ package c0dec0retwitchbot
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net"
 	"net/textproto"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -210,25 +214,86 @@ func (ccb *C0deC0reBot) JoinChannel() {
 	// not connecting to the server
 
 	fmt.Printf("[%s] Joined #%s as @%s!\r\n", timeStamp(), ccb.ChannelName, ccb.BotName)
-
 }
 
-// NAME: HandleChat
-// PURPOSE: To listen for log messages from the chat and respond to cvommands from the channel
+// NAME: ReadCredentials
+// PURPOSE: To read login and token information from a json file
 //
-//	owner. The bot will continue until its told to quit or is forcefully shut down.
+// IN: Nothing
+// OUT: Error if encounter nil if no error
+func (ccb *C0deC0reBot) ReadCredentials() error {
+
+	credFile, err := ioutil.ReadFile(ccb.FilePath)
+	if nil != err {
+		fmt.Printf("[%s] Failed to read credentials file at: %s", timeStamp(), ccb.FilePath)
+		return err
+	}
+
+	ccb.Credentials = &OAuthToken{}
+
+	// Creates a JSON decoder
+	dec := json.NewDecoder(strings.NewReader(string(credFile)))
+
+	// parse the JSON file
+	err = dec.Decode(ccb.Credentials)
+	if nil != err && io.EOF != err {
+		return err
+	}
+
+	return nil
+}
+
+// NAME: Speak
+// PURPOSE: Makes the bot send messages to the channel
+// IN: Nothing
+// OUT: Error if encountered, nil if no error encountered
+func (ccb *C0deC0reBot) Speak(msg string) error {
+
+	// Check for an empty message and return an error if message was empty
+	if msg == "" {
+		return errors.New("C0deC0reTwitchBot: cant speak, message was empty")
+
+	}
+
+	// Message was not empty so write the message to the screen
+	_, err := ccb.conn.Write([]byte(fmt.Sprintf("PRIVMSG #%s %s\r\n", ccb.BotName, msg)))
+	if nil != err {
+		return err
+	}
+
+	return nil
+}
+
+// NAME: Start
+// PURPOSE: Tells the bot to connect to a specified channel and handle chat messages until it is
+//
+//	forced to shutdown.
 //
 // IN: Nothing
 // OUT: Nothing
-func (ccb *C0deC0reBot) ReadCredentials() (*OAuthToken, error) {
+func (ccb *C0deC0reBot) Start() {
 
-	return nil, nil
-}
+	// First grab our credentials
+	err := ccb.ReadCredentials()
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Aborting...")
+	}
 
-// NAME: HandleChat
-// PURPOSE:
-// IN:
-// OUT:
-func (ccb *C0deC0reBot) Speak() error {
-	return nil
+	// Credentials are valid no contionouslt try to connect
+	for {
+		ccb.Connect()
+		ccb.JoinChannel()
+		err = ccb.HandleChat()
+		if nil != err {
+
+			// Attempt to reconnect unpon unexpected error
+			fmt.Println(err)
+			time.Sleep(1000 * time.Millisecond)
+			fmt.Println("Starting C0deC0reBot again...")
+		} else {
+			ccb.conn.Close()
+			return
+		}
+	}
 }
