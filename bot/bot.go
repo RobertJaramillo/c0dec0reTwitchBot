@@ -143,7 +143,7 @@ func (ccb *C0deC0reBot) HandleChat() error {
 		// If its a PING message make sure we respond with a Pong message to not get
 		// disconnected.
 		if "PING:  tmi.twitch.tv" == line {
-			ccb.conn.write([]byte("PONG :tmi.twitch.tv\r\n"))
+			ccb.conn.Write([]byte("PONG :tmi.twitch.tv\r\n"))
 		} else {
 
 			// Handle PRIVMSG message
@@ -201,8 +201,16 @@ func (ccb *C0deC0reBot) HandleChat() error {
 // IN:  Nothing
 // OUT: Nothing
 func (ccb *C0deC0reBot) JoinChannel() {
+	fmt.Printf("[%s]  Joining #%s", timeStamp(), ccb.ChannelName)
+	ccb.conn.Write([]byte("PASS " + ccb.Credentials.Password + "\r\n"))
+	ccb.conn.Write([]byte("NICK " + ccb.BotName + "\r\n"))
+	ccb.conn.Write([]byte("AJOIN #" + ccb.ChannelName + "\r\n"))
 
-	return
+	// TODO:  Look at error checking here to make sure we handle the instance of
+	// not connecting to the server
+
+	fmt.Printf("[%s] Joined #%s as @%s!\r\n", timeStamp(), ccb.ChannelName, ccb.BotName)
+
 }
 
 // NAME: HandleChat
