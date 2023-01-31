@@ -103,7 +103,6 @@ func (ccb *C0deC0reBot) Connect() {
 	}
 
 	fmt.Printf("[%s] Connected to %s\n", timeStamp(), ccb.ServerAddr)
-	return
 }
 
 // NAME:  Disconnect
@@ -172,7 +171,7 @@ func (ccb *C0deC0reBot) HandleChat() error {
 						// TODO: figure out the argument bit a little later
 						cmd := cmdMatches[1]
 						// arg := cmdMatches[2]
-
+						fmt.Println(cmd)
 						//Channel owner specific commands
 						if userName == ccb.ChannelName {
 							switch cmd {
@@ -181,11 +180,20 @@ func (ccb *C0deC0reBot) HandleChat() error {
 									timeStamp())
 								ccb.Disconnect()
 								return nil
+
 							default:
 								// Do nothing
 							}
-						}
+						} else {
+							switch cmd {
+							case "genprompt":
+								fmt.Println("I would be generating a prompt right now")
+								ccb.Speak("I would be generating a prompt right now")
 
+							default:
+								// Do Nothing
+							}
+						}
 					}
 
 				default:
