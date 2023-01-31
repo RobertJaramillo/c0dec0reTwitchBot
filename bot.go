@@ -114,7 +114,7 @@ func (ccb *C0deC0reBot) Disconnect() {
 	ccb.conn.Close()
 	upTime := time.Now().Sub(ccb.startTime).Seconds()
 	fmt.Printf("[%s] Closed connection to %s! Live for %fs\n", timeStamp(), ccb.ServerAddr, upTime)
-	return
+
 }
 
 // NAME: HandleChat
