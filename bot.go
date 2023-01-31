@@ -208,7 +208,7 @@ func (ccb *C0deC0reBot) JoinChannel() {
 	fmt.Printf("[%s]  Joining #%s", timeStamp(), ccb.ChannelName)
 	ccb.conn.Write([]byte("PASS " + ccb.Credentials.Password + "\r\n"))
 	ccb.conn.Write([]byte("NICK " + ccb.BotName + "\r\n"))
-	ccb.conn.Write([]byte("AJOIN #" + ccb.ChannelName + "\r\n"))
+	ccb.conn.Write([]byte("JOIN #" + ccb.ChannelName + "\r\n"))
 
 	// TODO:  Look at error checking here to make sure we handle the instance of
 	// not connecting to the server
