@@ -173,26 +173,28 @@ func (ccb *C0deC0reBot) HandleChat() error {
 						// arg := cmdMatches[2]
 						fmt.Printf("Got command: %s", cmd)
 						//Channel owner specific commands
-						if userName == ccb.ChannelName {
-							switch cmd {
+						switch cmd {
+
 							case "tbdown":
+								if(userName == ccb.ChannelName)
+								{
+								
 								fmt.Printf("[%s} Shutdown command received. Shutting down.\n",
 									timeStamp())
 								ccb.Disconnect()
 								return nil
+								}
+								break
+
+							case "genprompt":
+								fmt.Println("I would be generating a prompt right now")
+								ccb.Speak("I would be generating a prompt right now")
+								break
 
 							default:
 								// Do nothing
 							}
-						} else {
-							switch cmd {
-							case "genprompt":
-								fmt.Println("I would be generating a prompt right now")
-								ccb.Speak("I would be generating a prompt right now")
 
-							default:
-								// Do Nothing
-							}
 						}
 					}
 
