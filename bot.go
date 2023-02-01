@@ -171,7 +171,7 @@ func (ccb *C0deC0reBot) HandleChat() error {
 						// TODO: figure out the argument bit a little later
 						cmd := cmdMatches[1]
 						// arg := cmdMatches[2]
-						fmt.Println(cmd)
+						fmt.Printf("Got command: %s", cmd)
 						//Channel owner specific commands
 						if userName == ccb.ChannelName {
 							switch cmd {
