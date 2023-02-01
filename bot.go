@@ -187,7 +187,10 @@ func (ccb *C0deC0reBot) HandleChat() error {
 
 						case "genprompt":
 							fmt.Println("I would be generating a prompt right now")
-							ccb.Speak("I would be generating a prompt right now")
+							err = ccb.Speak("I would be generating a prompt right now")
+							if nil != err {
+								fmt.Println("err")
+							}
 							break
 
 						default:
@@ -284,6 +287,7 @@ func (ccb *C0deC0reBot) Start() {
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Aborting...")
+		return
 	}
 
 	// Credentials are valid no contionouslt try to connect
