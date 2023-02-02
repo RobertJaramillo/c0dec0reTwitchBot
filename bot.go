@@ -265,8 +265,12 @@ func (ccb *C0deC0reBot) Speak(msg string) error {
 	}
 
 	fmt.Println("I am HERE")
+
+	comp_msg := fmt.Sprintf("PRIVMSG #%s %s\r\n", ccb.ChannelName, msg)
+
 	// Message was not empty so write the message to the screen
-	_, err := ccb.conn.Write([]byte(fmt.Sprintf("PRIVMSG #%s %s\r\n", ccb.ChannelName, msg)))
+	_, err := ccb.conn.Write([]byte(comp_msg))
+
 	fmt.Println("Passed write")
 	if nil != err {
 		return err
