@@ -266,7 +266,7 @@ func (ccb *C0deC0reBot) Speak(msg string) error {
 
 	fmt.Println("I am HERE")
 
-	comp_msg := fmt.Sprintf("PRIVMSG #%s %s\r\n", ccb.ChannelName, msg)
+	comp_msg := fmt.Sprintf("PRIVMSG %s %s\r\n", ccb.ChannelName, msg)
 
 	fmt.Println(comp_msg)
 	// Message was not empty so write the message to the screen
