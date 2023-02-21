@@ -320,7 +320,6 @@ func (ccb *C0deC0reBot) Start() {
 */
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -429,44 +428,26 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
-	// Set up  the data to send in the request body
+	// Set up the data to send in the request body
+	// Create an http post message
 	data := url.Values{}
 	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
 	data.Set("client_secret", ccb.C0deC0reConfig.Secret)
 	data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
-
-	// Create an http post message
-	body := strings.NewReader(data.Encode())
-	fmt.Println(body)
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, body)
+	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Log the request body to make sure it's being set up correctly
-	fmt.Printf("Request body: %s\n", data.Encode())
-
+	// Now that our http request we send the request
 	resp, err := client.Do(req)
 	if nil != err {
 		fmt.Printf("[%s] Failed to get a response when getting the token", timeStamp())
 		return err
 	}
-
-	// Log the response body to see what's being returned by Twitch
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Error reading response body: %s", err)
-	} else {
-		fmt.Printf("Response body: %s\n", responseBody)
-	}
-
 	defer resp.Body.Close()
-	fmt.Println(resp.Body)
 
-	// I need to make sure that I have a credentials structure initlized before I decode into it
+	// Initialize credentials and Parse the response into my data structure
 	ccb.Credentials = &OAuthToken{}
-
-	// Parse the response into my data structure
-	resp.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
 	err = json.NewDecoder(resp.Body).Decode(ccb.Credentials)
 	if err != nil {
 		fmt.Printf("Error decoding response into OAuthToken struct: %s", err)
