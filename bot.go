@@ -439,7 +439,7 @@ func (ccb *C0deC0reBot) GetToken() error {
 	fmt.Println(body)
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, body)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencode")
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := client.Do(req)
 	if nil != err {
 		fmt.Println("[%s] Failed to get a response when getting the token", timeStamp())
