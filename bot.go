@@ -322,9 +322,7 @@ func (ccb *C0deC0reBot) Start() {
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"strings"
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
@@ -346,9 +344,15 @@ type C0deC0reBot struct {
 	ChannelName    string
 	BotName        string
 	FilePath       string
+	C0deC0reConfig *Config
 	Credentials    *OAuthToken
 	C0deC0reClient *twitch.Client
 	startTime      time.Time
+}
+
+type Config struct {
+	Secret   string `json:"Secret"`
+	ClientID string `json:"ClientID"`
 }
 
 type OAuthToken struct {
@@ -409,26 +413,31 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
-	ccb.Credentials = &OAuthToken{}
+	ccb.C0deC0reConfig = &Config{}
 
-	// Create JSON decoder
-	dec := json.NewDecoder(strings.NewReader(string(credFile)))
-
-	// Parse the JSON file
-	err = dec.Decode(ccb.Credentials)
-	if nil != err && io.EOF != err {
+	err = json.Unmarshal(credFile, &ccb.C0deC0reConfig)
+	if err != nil {
+		fmt.Println("Error parsing JSON:", err)
 		return err
 	}
 
 	return nil
+	/*
+	   // Create JSON decoder
+	   dec := json.NewDecoder(strings.NewReader(string(credFile)))
+
+	   // Parse the JSON file
+	   err = dec.Decode(ccb.Credentials)
+
+	   	if nil != err && io.EOF != err {
+	   		return err
+	   	}
+
+	   return nil
+	*/
 }
 
 func Speak(msg string) error {
-
-	return nil
-}
-
-func GetToken() error {
 
 	return nil
 }
