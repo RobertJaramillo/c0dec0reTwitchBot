@@ -435,8 +435,10 @@ func (ccb *C0deC0reBot) GetToken() error {
 	data.Set("grant_typee", ccb.C0deC0reConfig.Permissions)
 
 	// Create an http post message
+	body := strings.NewReader(data.Encode())
+	fmt.Println(body)
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
+	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, body)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencode")
 	resp, err := client.Do(req)
 	if nil != err {
