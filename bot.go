@@ -323,6 +323,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gempir/go-twitch-irc/v2"
@@ -351,8 +354,10 @@ type C0deC0reBot struct {
 }
 
 type Config struct {
-	Secret   string `json:"Secret"`
-	ClientID string `json:"ClientID"`
+	Secret      string `json:"Secret"`
+	ClientID    string `json:"ClientID"`
+	TokenURL    string `json:"TokenURL"`
+	Permissions string `json:"Permissions"`
 }
 
 type OAuthToken struct {
@@ -413,13 +418,33 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
+	// Build the config so that we
 	ccb.C0deC0reConfig = &Config{}
 
+	// Dump info from a config file into our structure
 	err = json.Unmarshal(credFile, &ccb.C0deC0reConfig)
 	if err != nil {
 		fmt.Println("Error parsing JSON:", err)
 		return err
 	}
+
+	// Set up  the data to send in the request body
+	data := url.Values{}
+	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
+	data.Set("client_secret", ccb.C0deC0reConfig.Secret)
+	data.Set("grant_typee", ccb.C0deC0reConfig.Permissions)
+
+	// Create an http post message
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencode")
+	resp, err := client.Do(req)
+	if nil != err {
+		fmt.Println("[%s] Failed to get a response when getting the token", timeStamp())
+	}
+
+	// Parse the response into my data structure
+	json.NewDecoder(resp.Body).Decode(ccb.Credentials)
 
 	return nil
 	/*
