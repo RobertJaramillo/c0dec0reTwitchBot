@@ -320,6 +320,7 @@ func (ccb *C0deC0reBot) Start() {
 */
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -462,6 +463,7 @@ func (ccb *C0deC0reBot) GetToken() error {
 	fmt.Println(resp.Body)
 
 	// Parse the response into my data structure
+	resp.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
 	json.NewDecoder(resp.Body).Decode(ccb.Credentials)
 
 	return nil
