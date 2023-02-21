@@ -393,7 +393,43 @@ type Bot interface {
 	GetToken() error
 }
 
+// NAME: Connect
+// PURPOSE:  To connect the passed in bot to a twitch IRC sever. It will continously try to connect
+//
+//	until the but is manaually shutdown.
+//
+// IN:  b - *Bot, the bot we are trying to connect to the IRC server
+// OUT: error, Any error value that is not a timeout error.
 func (ccb *C0deC0reBot) Connect() {
+
+	//Print intial message to screen
+	fmt.Printf("[%s] Connecting to %s....\n", timeStamp(), ccb.ChannelName)
+
+	//Make connection
+	ccb.C0deC0reClient = twitch.NewClient(ccb.BotName, ccb.Credentials.AcessToken)
+	ccb.C0deC0reClient.Join(ccb.ChannelName)
+
+	fmt.Printf("[%s] Connected to %s\n", timeStamp(), ccb.ChannelName)
+
+	// listen for messages in the chat
+	ccb.C0deC0reClient.OnPrivateMessage(func(message twitch.PrivateMessage) {
+		// parse the message and extract the sender and content
+		sender := message.User.Name
+		content := message.Message
+
+		// respond to a command
+		if strings.HasPrefix(content, "!hello") {
+			ccb.C0deC0reClient.Say(ccb.ChannelName, fmt.Sprintf("Hello, %s!", sender))
+		}
+	})
+
+	// connect to Twitch IRC
+	ccb.C0deC0reClient.Connect()
+
+	// keep the program running indefinitely
+	for {
+		time.Sleep(5 * time.Second)
+	}
 
 }
 
@@ -446,8 +482,10 @@ func (ccb *C0deC0reBot) GetToken() error {
 	}
 	defer resp.Body.Close()
 
-	// Initialize credentials and Parse the response into my data structure
+	// I need to make sure that I have a credentials structure initlized before I decode into it
 	ccb.Credentials = &OAuthToken{}
+
+	// Initialize credentials and Parse the response into my data structure
 	err = json.NewDecoder(resp.Body).Decode(ccb.Credentials)
 	if err != nil {
 		fmt.Printf("Error decoding response into OAuthToken struct: %s", err)
