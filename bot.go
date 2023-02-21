@@ -462,6 +462,9 @@ func (ccb *C0deC0reBot) GetToken() error {
 	defer resp.Body.Close()
 	fmt.Println(resp.Body)
 
+	// I need to make sure that I have a credentials structure initlized before I decode into it
+	ccb.Credentials = &OAuthToken{}
+
 	// Parse the response into my data structure
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
 	err = json.NewDecoder(resp.Body).Decode(ccb.Credentials)
