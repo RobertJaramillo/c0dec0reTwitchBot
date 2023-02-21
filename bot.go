@@ -1,5 +1,6 @@
 package c0dec0retwitchbot
 
+/*
 import (
 	"bufio"
 	"encoding/json"
@@ -11,7 +12,9 @@ import (
 	"net/textproto"
 	"regexp"
 	"strings"
+
 	"time"
+
 )
 
 // Constant time format so our bot timestamps messages in the way
@@ -313,4 +316,119 @@ func (ccb *C0deC0reBot) Start() {
 			return
 		}
 	}
+}
+*/
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"io/ioutil"
+	"strings"
+	"time"
+
+	"github.com/gempir/go-twitch-irc/v2"
+)
+
+// Constant time format so our bot timestamps messages in the way
+const ESTFormat = "Jan 26 22:37:00 EST"
+
+// NAME: timeStamp
+// PURPOSE: To return the cuirrent date and time in a formatted string
+// IN: Nothing
+// OUT: A formatted string containing the current date and time
+func timeStamp() string {
+	return time.Now().Format(ESTFormat)
+}
+
+// /////////////////////////////////STRUCTURES AND INTERFACES///////////////////////////////////////
+type C0deC0reBot struct {
+	ChannelName    string
+	BotName        string
+	FilePath       string
+	Credentials    *OAuthToken
+	C0deC0reClient *twitch.Client
+	startTime      time.Time
+}
+
+type OAuthToken struct {
+	AcessToken string `json:"access_token"`
+	TokentType string `json:"token_type"`
+	ExpiresIn  string `json:"expires_in"`
+}
+
+type Bot interface {
+
+	// Opens a connection to the Twitch.tv IRC chat server.
+	Connect()
+
+	// Closes a connection to the Twitch.tv IRC chat server.
+	Disconnect()
+
+	// Listens to chat messages and PING request from the IRC server.
+	HandleChat() error
+
+	// Joins a specific chat channel.
+	JoinChannel()
+
+	// Parses credentials needed for authentication.
+	ReadCredentials() error
+
+	// Sends a message to the connected channel.
+	Speak(msg string) error
+
+	// Attempts to keep the bot connected and handling chat.
+	Start()
+
+	// Get the OAuth token
+	GetToken() error
+}
+
+func (ccb *C0deC0reBot) Connect() {
+
+}
+
+func (ccb *C0deC0reBot) Disconnect() {
+
+}
+
+func (ccb *C0deC0reBot) HandleChat() {
+
+}
+
+func (ccb *C0deC0reBot) JoinChannel() {
+
+}
+
+func (ccb *C0deC0reBot) GetToken() error {
+
+	// Open the file path and get the details for client id and client secret out
+	credFile, err := ioutil.ReadFile((ccb.FilePath))
+	if nil != err {
+		fmt.Printf("[%s] Failed to read credentials at: %s", timeStamp(), ccb.FilePath)
+		return err
+	}
+
+	ccb.Credentials = &OAuthToken{}
+
+	// Create JSON decoder
+	dec := json.NewDecoder(strings.NewReader(string(credFile)))
+
+	// Parse the JSON file
+	err = dec.Decode(ccb.Credentials)
+	if nil != err && io.EOF != err {
+		return err
+	}
+
+	return nil
+}
+
+func Speak(msg string) error {
+
+	return nil
+}
+
+func GetToken() error {
+
+	return nil
 }
