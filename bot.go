@@ -464,22 +464,13 @@ func (ccb *C0deC0reBot) GetToken() error {
 
 	// Parse the response into my data structure
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(responseBody))
-	json.NewDecoder(resp.Body).Decode(ccb.Credentials)
+	err = json.NewDecoder(resp.Body).Decode(ccb.Credentials)
+	if err != nil {
+		fmt.Printf("Error decoding response into OAuthToken struct: %s", err)
+		return err
+	}
 
 	return nil
-	/*
-	   // Create JSON decoder
-	   dec := json.NewDecoder(strings.NewReader(string(credFile)))
-
-	   // Parse the JSON file
-	   err = dec.Decode(ccb.Credentials)
-
-	   	if nil != err && io.EOF != err {
-	   		return err
-	   	}
-
-	   return nil
-	*/
 }
 
 func Speak(msg string) error {
