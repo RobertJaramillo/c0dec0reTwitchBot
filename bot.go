@@ -446,6 +446,7 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
+	defer resp.Body.Close()
 	fmt.Println(resp.Body)
 
 	// Parse the response into my data structure
