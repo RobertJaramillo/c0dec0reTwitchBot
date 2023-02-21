@@ -363,7 +363,7 @@ type Config struct {
 type OAuthToken struct {
 	AcessToken string `json:"access_token"`
 	TokentType string `json:"token_type"`
-	ExpiresIn  string `json:"expires_in"`
+	ExpiresIn  int    `json:"expires_in"`
 }
 
 type Bot interface {
