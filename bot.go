@@ -440,10 +440,22 @@ func (ccb *C0deC0reBot) GetToken() error {
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, body)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Log the request body to make sure it's being set up correctly
+	fmt.Printf("Request body: %s\n", data.Encode())
+
 	resp, err := client.Do(req)
 	if nil != err {
 		fmt.Printf("[%s] Failed to get a response when getting the token", timeStamp())
 		return err
+	}
+
+	// Log the response body to see what's being returned by Twitch
+	responseBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Printf("Error reading response body: %s", err)
+	} else {
+		fmt.Printf("Response body: %s\n", responseBody)
 	}
 
 	defer resp.Body.Close()
