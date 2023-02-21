@@ -432,7 +432,7 @@ func (ccb *C0deC0reBot) GetToken() error {
 	data := url.Values{}
 	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
 	data.Set("client_secret", ccb.C0deC0reConfig.Secret)
-	data.Set("grant_typee", ccb.C0deC0reConfig.Permissions)
+	data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
 
 	// Create an http post message
 	body := strings.NewReader(data.Encode())
