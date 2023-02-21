@@ -442,8 +442,11 @@ func (ccb *C0deC0reBot) GetToken() error {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := client.Do(req)
 	if nil != err {
-		fmt.Println("[%s] Failed to get a response when getting the token", timeStamp())
+		fmt.Printf("[%s] Failed to get a response when getting the token", timeStamp())
+		return err
 	}
+
+	fmt.Println(resp.Body)
 
 	// Parse the response into my data structure
 	json.NewDecoder(resp.Body).Decode(ccb.Credentials)
