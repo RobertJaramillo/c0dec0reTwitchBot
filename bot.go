@@ -358,7 +358,7 @@ type Config struct {
 	ClientID    string `json:"ClientID"`
 	TokenURL    string `json:"TokenURL"`
 	Permissions string `json:"Permissions"`
-	Scope       string `json:"scopes"`
+	Scope       string `json:"scope"`
 }
 
 type OAuthToken struct {
