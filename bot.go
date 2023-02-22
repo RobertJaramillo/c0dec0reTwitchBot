@@ -411,7 +411,7 @@ func (ccb *C0deC0reBot) Connect() {
 
 	fmt.Printf("[%s] Connected to %s\n", timeStamp(), ccb.ChannelName)
 
-	// listen for messages in the chat
+	// This is our callback function that listens for messages in the chat
 	ccb.C0deC0reClient.OnPrivateMessage(func(message twitch.PrivateMessage) {
 		// parse the message and extract the sender and content
 		sender := message.User.Name
@@ -424,7 +424,10 @@ func (ccb *C0deC0reBot) Connect() {
 	})
 
 	// connect to Twitch IRC
-	ccb.C0deC0reClient.Connect()
+	err := ccb.C0deC0reClient.Connect()
+	if nil != err {
+		fmt.Printf("[%s] Got error %s", timeStamp(), err)
+	}
 
 	// keep the program running indefinitely
 	for {
