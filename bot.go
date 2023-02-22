@@ -358,6 +358,7 @@ type Config struct {
 	ClientID    string `json:"ClientID"`
 	TokenURL    string `json:"TokenURL"`
 	Permissions string `json:"Permissions"`
+	scope       string `json:"scopes"`
 }
 
 type OAuthToken struct {
@@ -391,6 +392,21 @@ type Bot interface {
 
 	// Get the OAuth token
 	GetToken() error
+
+	// Validate token scopes
+	ValidateToken() (bool, error)
+}
+
+func (ccb *C0deC0reBot) Disconnect() {
+
+}
+
+func (ccb *C0deC0reBot) HandleChat() {
+
+}
+
+func (ccb *C0deC0reBot) JoinChannel() {
+
 }
 
 // NAME: Connect
@@ -433,19 +449,6 @@ func (ccb *C0deC0reBot) Connect() {
 	for {
 		time.Sleep(5 * time.Second)
 	}
-
-}
-
-func (ccb *C0deC0reBot) Disconnect() {
-
-}
-
-func (ccb *C0deC0reBot) HandleChat() {
-
-}
-
-func (ccb *C0deC0reBot) JoinChannel() {
-
 }
 
 func (ccb *C0deC0reBot) GetToken() error {
@@ -473,11 +476,12 @@ func (ccb *C0deC0reBot) GetToken() error {
 	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
 	data.Set("client_secret", ccb.C0deC0reConfig.Secret)
 	data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
+	data.Set("scope", ccb.C0deC0reConfig.scope)
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Now that our http request we send the request
+	// Now that our http request is built we send the request
 	resp, err := client.Do(req)
 	if nil != err {
 		fmt.Printf("[%s] Failed to get a response when getting the token", timeStamp())
@@ -496,6 +500,33 @@ func (ccb *C0deC0reBot) GetToken() error {
 	}
 
 	return nil
+}
+
+func (ccb *C0deC0reBot) ValidateToken() (bool, error) {
+	req, err := http.NewRequest("GET", "https://id.twitch.tv/oauth2/validate", nil)
+	if err != nil {
+		return false, err
+	}
+	req.Header.Set("Authorization", "OAuth "+ccb.Credentials.AcessToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return false, nil
+	}
+	fmt.Println(string(body))
+
+	if resp.StatusCode == http.StatusOK {
+		return true, nil
+	} else {
+		return false, nil
+	}
 }
 
 func Speak(msg string) error {
