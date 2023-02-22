@@ -407,12 +407,8 @@ func (ccb *C0deC0reBot) Connect() {
 
 	//Make connection
 	ccb.C0deC0reClient = twitch.NewClient(ccb.BotName, ccb.Credentials.AcessToken)
+	ccb.C0deC0reClient.Join(ccb.ChannelName)
 
-	err := ccb.C0deC0reClient.Join(ccb.ChannelName)
-	if err != nil {
-		fmt.Printf("Failed to join channel %s: %v\n", ccb.ChannelName, err)
-		return
-	}
 	fmt.Printf("[%s] Connected to %s\n", timeStamp(), ccb.ChannelName)
 
 	// listen for messages in the chat
