@@ -358,7 +358,7 @@ type Config struct {
 	ClientID    string `json:"ClientID"`
 	TokenURL    string `json:"TokenURL"`
 	Permissions string `json:"Permissions"`
-	scope       string `json:"scopes"`
+	Scope       string `json:"scopes"`
 }
 
 type OAuthToken struct {
@@ -476,7 +476,7 @@ func (ccb *C0deC0reBot) GetToken() error {
 	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
 	data.Set("client_secret", ccb.C0deC0reConfig.Secret)
 	data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
-	data.Set("scope", ccb.C0deC0reConfig.scope)
+	data.Set("scope", ccb.C0deC0reConfig.Scope)
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
