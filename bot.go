@@ -556,13 +556,6 @@ func (ccb *C0deC0reBot) ValidateToken() (bool, error) {
 	}
 	req.Header.Set("Authorization", "OAuth"+ccb.Credentials.AcessToken)
 
-	for name, values := range req.Header {
-		// Loop over all values for the name.
-		for _, value := range values {
-			fmt.Println(name, value)
-		}
-	}
-
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
