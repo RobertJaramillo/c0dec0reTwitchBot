@@ -2,6 +2,34 @@ package c0dec0retwitchbot
 
 /*
 import (
+	"time"
+)
+
+type BasicBot struct {
+	channel        string
+	MsgRate        time.Duration
+	Name           string
+	Port           string
+	ConfigFilePath string
+	Server         string
+	Credentials    *OAuthCred
+}
+
+type OAuthCred struct {
+	Password string `json:"password,omitempty"`
+}
+
+type C0deC0reBot interface {
+	Connect()
+	Disconnect()
+	HandelChat() error
+	ReadCredentials() (*OAuthCred, error)
+	Say(msg string) error
+	Start()
+}
+
+/*
+import (
 	"bufio"
 	"encoding/json"
 	"errors"
@@ -317,8 +345,8 @@ func (ccb *C0deC0reBot) Start() {
 		}
 	}
 }
-*/
 
+*/
 import (
 	"encoding/json"
 	"fmt"
@@ -358,9 +386,10 @@ type Config struct {
 	ClientID    string `json:"ClientID"`
 	TokenURL    string `json:"TokenURL"`
 	Permissions string `json:"Permissions"`
-	Scope       string `json:"scope"`
+	Scope       string `json:"Scope"`
+	ListenURL   string `json:"ListenServURL"`
+	ListenPort  string `json:"ListenServPort"`
 }
-
 type OAuthToken struct {
 	AcessToken string `json:"access_token"`
 	TokentType string `json:"token_type"`
@@ -470,6 +499,24 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
+	//Setup a server to listen for the token
+	/*
+			PORT := ":" +
+		        l, err := net.Listen("tcp", PORT)
+		        if err != nil {
+		                fmt.Println(err)
+		                return
+		        }
+		        defer l.Close()
+
+		        c, err := l.Accept()
+		        if err != nil {
+		                fmt.Println(err)
+		                return
+		        }
+	*/
+	fmt.Print(&ccb.C0deC0reConfig)
+
 	// Set up the data to send in the request body
 	// Create an http post message
 	data := url.Values{}
@@ -507,7 +554,14 @@ func (ccb *C0deC0reBot) ValidateToken() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	req.Header.Set("Authorization", "OAuth "+ccb.Credentials.AcessToken)
+	req.Header.Set("Authorization", "OAuth"+ccb.Credentials.AcessToken)
+
+	for name, values := range req.Header {
+		// Loop over all values for the name.
+		for _, value := range values {
+			fmt.Println(name, value)
+		}
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
