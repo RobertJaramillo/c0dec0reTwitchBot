@@ -351,6 +351,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -500,22 +501,17 @@ func (ccb *C0deC0reBot) GetToken() error {
 	}
 
 	//Setup a server to listen for the token
-	/*
-			PORT := ":" +
-		        l, err := net.Listen("tcp", PORT)
-		        if err != nil {
-		                fmt.Println(err)
-		                return
-		        }
-		        defer l.Close()
 
-		        c, err := l.Accept()
-		        if err != nil {
-		                fmt.Println(err)
-		                return
-		        }
-	*/
-	fmt.Print(&ccb.C0deC0reConfig)
+	l, err := net.Listen("tcp", ccb.C0deC0reConfig.ListenPort+":"+ccb.C0deC0reConfig.ListenPort)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer l.Close()
+
+	go handleConnections(l)
+
+	time.Sleep(1000)
 
 	// Set up the data to send in the request body
 	// Create an http post message
@@ -579,4 +575,34 @@ func (ccb *C0deC0reBot) ValidateToken() (bool, error) {
 func Speak(msg string) error {
 
 	return nil
+}
+
+// Function to handle connections
+func handleConnections(ln net.Listener) {
+
+	// The goroutine that handles incoming connections
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+
+	// Read data from the connection
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	// Convert the byte slice to a string and print it
+	fmt.Println("Received data:", string(buf[:n]))
 }
