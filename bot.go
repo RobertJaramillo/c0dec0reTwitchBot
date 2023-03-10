@@ -583,6 +583,7 @@ func handleConnections(ln net.Listener) {
 	// The goroutine that handles incoming connections
 	for {
 		conn, err := ln.Accept()
+		fmt.Println("Listening for connetions")
 		if err != nil {
 			fmt.Println(err)
 			continue

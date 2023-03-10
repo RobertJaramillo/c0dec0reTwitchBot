@@ -1,12 +1,15 @@
 {
-    "APIKeys":[
-        {"Twitch": 0  }
-    ],
-    "ServerInfo":[
-        {"IRCServerName": 0 },
-        {"Port": 0},
-        {"ChannelName": 0}, 
-        {"OAuthToken": 0}, 
-        {"MsgRate": 0}
-    ]
+    "IRCServerName": 0 ,
+    "Port": 0,
+    "ChannelName": 0, 
+    "OAuthToken": 0, 
+    "MsgRate": 0,
+    "Secret": "snxj3ga96tcq6f3txx3obihy9tr15f",
+    "ClientID": "zn2s0do5jo5r312vkl0yjhqth7fiy8",
+    "TokenURL": "https://id.twitch.tv/oauth2/authorize",
+    "Permissions": "client_credentials",
+    "Scope": "chat:read chat:edit channel:moderate",
+    "ListenServURL": "http://localhost",
+    "ListenServPort": "8080"
+
 }
