@@ -502,7 +502,7 @@ func (ccb *C0deC0reBot) GetToken() error {
 
 	//Setup a server to listen for the token
 
-	l, err := net.Listen("tcp", ccb.C0deC0reConfig.ListenPort+":"+ccb.C0deC0reConfig.ListenPort)
+	l, err := net.Listen("tcp", ccb.C0deC0reConfig.ListenURL+":"+ccb.C0deC0reConfig.ListenPort)
 	if err != nil {
 		fmt.Println(err)
 		return err
