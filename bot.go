@@ -348,16 +348,19 @@ func (ccb *C0deC0reBot) Start() {
 
 */
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gempir/go-twitch-irc/v2"
+	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"rand"
 	"strings"
 	"time"
-
-	"github.com/gempir/go-twitch-irc/v2"
 )
 
 // Constant time format so our bot timestamps messages in the way
@@ -369,6 +372,74 @@ const ESTFormat = "Jan 26 22:37:00 EST"
 // OUT: A formatted string containing the current date and time
 func timeStamp() string {
 	return time.Now().Format(ESTFormat)
+}
+
+func startServer(ctx context.Context, done chan<- struct{}, data chan<- []byte, out chan<- string) {
+	listener, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer listener.Close()
+
+	log.Printf("Listening on %s", listener.Addr())
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Print("Shutting down server...")
+			return
+		default:
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Print(err)
+				continue
+			}
+
+			go handleConnection(conn, data, out)
+		}
+	}
+}
+
+func handleConnection(conn net.Conn, data chan<- []byte, out chan<- string) {
+	defer conn.Close()
+
+	log.Printf("New connection from %s", conn.RemoteAddr())
+
+	buf := make([]byte, 1024)
+	for {
+		n, err := conn.Read(buf)
+		if err != nil {
+			if err != io.EOF {
+				log.Print(err)
+			}
+			break
+		}
+
+		// Send the received data to the `data` channel
+		data <- buf[:n]
+
+		// Convert the received data to a string and send it to the `out` channel
+		out <- string(buf[:n])
+	}
+
+	log.Printf("Connection from %s closed", conn.RemoteAddr())
+}
+
+func stateString() string {
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	length := 10 // Length of the random string
+
+	// Seed the random number generator
+	rand.Seed(time.Now().UnixNano())
+
+	// Generate a random string of the given length
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+
+	return string(b)
 }
 
 // /////////////////////////////////STRUCTURES AND INTERFACES///////////////////////////////////////
@@ -500,26 +571,34 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
-	//Setup a server to listen for the token
+	//Setup a channel and listening server to store the response
+	out := make(chan string)
+	defer close(out)
 
-	l, err := net.Listen("tcp", ccb.C0deC0reConfig.ListenURL+":"+ccb.C0deC0reConfig.ListenPort)
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	defer l.Close()
+	go func() {
+		for s := range out {
+			fmt.Printf("received: %s\n", s)
+		}
+	}()
 
-	go handleConnections(l)
+	startServer(context.Background(), nil, nil, out)
 
 	time.Sleep(1000)
 
 	// Set up the data to send in the request body
 	// Create an http post message
+	state := stateString()
+
 	data := url.Values{}
+	//data.Set("client_id", ccb.C0deC0reConfig.ClientID)
+	//data.Set("client_secret", ccb.C0deC0reConfig.Secret)
+	//data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
+	//data.Set("scope", ccb.C0deC0reConfig.Scope)
 	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
-	data.Set("client_secret", ccb.C0deC0reConfig.Secret)
-	data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
+	data.Set("redirect_uri", ccb.C0deC0reConfig.ListenURL)
 	data.Set("scope", ccb.C0deC0reConfig.Scope)
+	data.Set("state", state)
+
 	client := &http.Client{}
 	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -575,35 +654,4 @@ func (ccb *C0deC0reBot) ValidateToken() (bool, error) {
 func Speak(msg string) error {
 
 	return nil
-}
-
-// Function to handle connections
-func handleConnections(ln net.Listener) {
-
-	// The goroutine that handles incoming connections
-	for {
-		conn, err := ln.Accept()
-		fmt.Println("Listening for connetions")
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		go handleConnection(conn)
-	}
-}
-
-func handleConnection(conn net.Conn) {
-	defer conn.Close()
-
-	// Read data from the connection
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	// Convert the byte slice to a string and print it
-	fmt.Println("Received data:", string(buf[:n]))
 }
