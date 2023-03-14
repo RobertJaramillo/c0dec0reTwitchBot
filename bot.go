@@ -374,7 +374,7 @@ func timeStamp() string {
 	return time.Now().Format(ESTFormat)
 }
 
-func startServer(ctx context.Context, done chan<- struct{}, data chan<- []byte, out chan<- string) {
+func startServer(ctx context.Context, done chan<- struct{}, data chan<- []byte, out chan<- string, serverStarted chan<- struct{}) {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatal(err)
@@ -383,6 +383,9 @@ func startServer(ctx context.Context, done chan<- struct{}, data chan<- []byte, 
 	defer listener.Close()
 
 	log.Printf("Listening on %s", listener.Addr())
+
+	// Signal that the server has started
+	serverStarted <- struct{}{}
 
 	for {
 		select {
@@ -570,21 +573,22 @@ func (ccb *C0deC0reBot) GetToken() error {
 		return err
 	}
 
-	// Create a buffered channel to signal the completion of server startup
-	serverStarted := make(chan struct{}, 1)
-
-	// Create a channel to receive data from the server
-	data := make(chan []byte)
-
-	// Create a channel to receive string data from the server
+	// This is the channel that will store the response for the server
 	out := make(chan string)
+	defer close(out)
 
-	// Start the server in a separate goroutine
+	serverStarted := make(chan struct{})
+	defer close(serverStarted)
+
 	go func() {
-		startServer(context.Background(), serverStarted, data, out)
+		for s := range out {
+			fmt.Printf("received: %s\n", s)
+		}
 	}()
 
-	// Wait for the server to start listening on the specified port
+	go startServer(context.Background(), nil, nil, out, serverStarted)
+
+	// Wait for the server to start
 	<-serverStarted
 
 	// Set up the data to send in the request body
