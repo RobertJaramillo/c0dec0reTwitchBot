@@ -553,75 +553,78 @@ func (ccb *C0deC0reBot) Connect() {
 }
 
 func (ccb *C0deC0reBot) GetToken() error {
+// Open the file path and get the details for client id and client secret out
+credFile, err := ioutil.ReadFile((ccb.FilePath))
+if nil != err {
+	fmt.Printf("[%s] Failed to read credentials at: %s", timeStamp(), ccb.FilePath)
+	return err
+}
 
-	// Open the file path and get the details for client id and client secret out
-	credFile, err := ioutil.ReadFile((ccb.FilePath))
-	if nil != err {
-		fmt.Printf("[%s] Failed to read credentials at: %s", timeStamp(), ccb.FilePath)
-		return err
-	}
+// Build the config so that we
+ccb.C0deC0reConfig = &Config{}
 
-	// Build the config so that we
-	ccb.C0deC0reConfig = &Config{}
+// Dump info from a config file into our structure
+err = json.Unmarshal(credFile, &ccb.C0deC0reConfig)
+if err != nil {
+	fmt.Println("Error parsing JSON:", err)
+	return err
+}
 
-	// Dump info from a config file into our structure
-	err = json.Unmarshal(credFile, &ccb.C0deC0reConfig)
-	if err != nil {
-		fmt.Println("Error parsing JSON:", err)
-		return err
-	}
+// Create a buffered channel to signal the completion of server startup
+serverStarted := make(chan struct{}, 1)
 
-	//Setup a channel and listening server to store the response
-	out := make(chan string)
-	defer close(out)
+// Create a channel to receive data from the server
+data := make(chan []byte)
 
-	go func() {
-		for s := range out {
-			fmt.Printf("received: %s\n", s)
-		}
-	}()
+// Create a channel to receive string data from the server
+out := make(chan string)
 
-	startServer(context.Background(), nil, nil, out)
+// Start the server in a separate goroutine
+go func() {
+	startServer(context.Background(), serverStarted, data, out)
+}()
 
-	time.Sleep(1000)
+// Wait for the server to start listening on the specified port
+<-serverStarted
 
-	// Set up the data to send in the request body
-	// Create an http post message
-	state := stateString()
+// Set up the data to send in the request body
+// Create an http post message
+state := stateString()
 
-	data := url.Values{}
-	//data.Set("client_id", ccb.C0deC0reConfig.ClientID)
-	//data.Set("client_secret", ccb.C0deC0reConfig.Secret)
-	//data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
-	//data.Set("scope", ccb.C0deC0reConfig.Scope)
-	data.Set("client_id", ccb.C0deC0reConfig.ClientID)
-	data.Set("redirect_uri", ccb.C0deC0reConfig.ListenURL)
-	data.Set("scope", ccb.C0deC0reConfig.Scope)
-	data.Set("state", state)
+data := url.Values{}
+//data.Set("client_id", ccb.C0deC0reConfig.ClientID)
+//data.Set("client_secret", ccb.C0deC0reConfig.Secret)
+//data.Set("grant_type", ccb.C0deC0reConfig.Permissions)
+//data.Set("scope", ccb.C0deC0reConfig.Scope)
+data.Set("client_id", ccb.C0deC0reConfig.ClientID)
+data.Set("redirect_uri", ccb.C0deC0reConfig.ListenURL)
+data.Set("scope", ccb.C0deC0reConfig.Scope)
+data.Set("state", state)
 
-	client := &http.Client{}
-	req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+client := &http.Client{}
+req, _ := http.NewRequest("POST", ccb.C0deC0reConfig.TokenURL, strings.NewReader(data.Encode()))
+req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	// Now that our http request is built we send the request
-	resp, err := client.Do(req)
-	if nil != err {
-		fmt.Printf("[%s] Failed to get a response when getting the token", timeStamp())
-		return err
-	}
-	defer resp.Body.Close()
+// Now that our http request is built we send the request
+resp, err := client.Do(req)
+if nil != err {
+	fmt.Printf("[%s] Failed to get a response when getting the token", timeStamp())
+	return err
+}
+defer resp.Body.Close()
 
-	// I need to make sure that I have a credentials structure initlized before I decode into it
-	ccb.Credentials = &OAuthToken{}
+// I need to make sure that I have a credentials structure initlized before I decode into it
+ccb.Credentials = &OAuthToken{}
 
-	// Initialize credentials and Parse the response into my data structure
-	err = json.NewDecoder(resp.Body).Decode(ccb.Credentials)
-	if err != nil {
-		fmt.Printf("Error decoding response into OAuthToken struct: %s", err)
-		return err
-	}
+// Initialize credentials and Parse the response into my data structure
+err = json.NewDecoder(resp.Body).Decode(ccb.Credentials)
+if err != nil {
+	fmt.Printf("Error decoding response into OAuthToken struct: %s", err)
+	return err
+}
 
-	return nil
+return nil
+}
 }
 
 func (ccb *C0deC0reBot) ValidateToken() (bool, error) {
