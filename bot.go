@@ -355,10 +355,10 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
-	"rand"
 	"strings"
 	"time"
 )
